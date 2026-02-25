@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AquaTrack PWA</title>
+    <title>AquaTrack Pro</title>
     <style>
-        /* CSS AYARLARI */
         :root {
             --bg: #e0e5ec;
             --text: #333;
             --glass: rgba(255, 255, 255, 0.8);
             --primary: #4facfe;
-            --shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --badge-locked: rgba(128, 128, 128, 0.2);
         }
 
         body.dark-mode {
@@ -24,53 +24,58 @@
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             display: flex;
             justify-content: center;
+            min-height: 100vh;
             transition: 0.3s;
         }
 
+        /* Ana Konteyner - Orantısız yayılmayı engeller */
         .app-container {
             width: 100%;
-            max-width: 450px;
-            height: 100vh;
+            max-width: 500px; /* Tablet/PC'de çok yayılmasın */
             padding: 20px;
             box-sizing: border-box;
             position: relative;
+            padding-bottom: 100px;
         }
 
-        .page { display: none; }
+        .page { display: none; text-align: center; animation: fadeIn 0.3s; }
         .page.active { display: block; }
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
 
-        /* Bardak ve ML Çizgileri */
+        /* Bardak Alanı */
         .tracker-wrapper {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
-            margin: 30px 0;
+            gap: 20px;
+            margin: 20px 0;
         }
 
         .cup-container {
-            width: 100px;
-            height: 250px;
+            width: 110px;
+            height: 280px;
             border: 4px solid var(--primary);
-            border-radius: 10px 10px 30px 30px;
+            border-radius: 10px 10px 35px 35px;
             position: relative;
             overflow: hidden;
             background: var(--glass);
+            box-shadow: var(--shadow);
         }
 
         .cup-labels {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 250px;
-            font-size: 12px;
+            height: 280px;
+            font-size: 11px;
+            font-weight: bold;
             color: var(--primary);
+            width: 65px;
             text-align: right;
-            width: 60px;
         }
 
         .water {
@@ -78,37 +83,99 @@
             bottom: 0;
             width: 100%;
             background: linear-gradient(to top, #00f2fe, #4facfe);
-            transition: height 0.5s ease;
+            transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
             height: 0%;
         }
 
-        /* Butonlar */
-        .glass-btn, button {
+        /* Modern Butonlar ve Inputlar */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        button {
             background: var(--glass);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
+            border-radius: 15px;
             padding: 12px;
             color: var(--text);
             cursor: pointer;
-            margin: 5px;
+            font-weight: bold;
+            transition: transform 0.2s;
+            box-shadow: var(--shadow);
         }
 
+        button:active { transform: scale(0.95); }
+
+        .custom-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        input {
+            background: var(--glass);
+            color: var(--text);
+            border: 1px solid #ccc;
+            border-radius: 15px;
+            padding: 10px;
+            width: 120px;
+            text-align: center;
+        }
+
+        /* Rozet Sistemi */
+        .badge-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .badge-card {
+            background: var(--glass);
+            padding: 15px;
+            border-radius: 20px;
+            filter: grayscale(1) opacity(0.4); /* Varsayılan: Silik */
+            transition: 0.5s;
+            border: 2px solid transparent;
+        }
+
+        .badge-card.unlocked {
+            filter: grayscale(0) opacity(1);
+            border-color: #ffd700;
+            transform: translateY(-5px);
+        }
+
+        .badge-icon { font-size: 30px; margin-bottom: 5px; }
+
+        /* Alt Navigasyon - Orantılı hale getirildi */
         .bottom-nav {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 90%;
+            width: calc(100% - 40px);
+            max-width: 400px;
             background: var(--glass);
+            backdrop-filter: blur(10px);
             display: flex;
             justify-content: space-around;
-            padding: 10px;
-            border-radius: 30px;
+            padding: 12px;
+            border-radius: 25px;
             box-shadow: var(--shadow);
+            z-index: 1000;
         }
 
-        .current-status { text-align: center; margin-top: 10px; }
-        input { padding: 10px; border-radius: 15px; border: 1px solid #ccc; width: 100px; }
+        .nav-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            padding: 5px 15px;
+            box-shadow: none;
+        }
     </style>
 </head>
 <body class="dark-mode">
@@ -116,8 +183,8 @@
     <div class="app-container">
         <section id="home-page" class="page active">
             <div style="display:flex; justify-content: space-between; align-items: center;">
-                <h2>AquaTrack</h2>
-                <button onclick="toggleTheme()">🌓</button>
+                <h2 style="margin:0">AquaTrack</h2>
+                <button class="nav-btn" onclick="toggleTheme()">🌓</button>
             </div>
 
             <div class="tracker-wrapper">
@@ -128,43 +195,68 @@
             </div>
 
             <div class="current-status">
-                <h1 style="margin:0"><span id="current-ml">0</span> ml</h1>
-                <p>Hedef: <span id="target-display">2000</span> ml</p>
+                <h1 style="font-size: 3rem; margin: 5px 0;"><span id="current-ml">0</span></h1>
+                <p style="margin:0; opacity: 0.7;">ml / <span id="target-display">2000</span> ml</p>
             </div>
 
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px; margin-top:20px;">
+            <div class="action-grid">
                 <button onclick="addWater(200)">+200ml</button>
                 <button onclick="addWater(330)">+330ml</button>
                 <button onclick="addWater(500)">+500ml</button>
             </div>
 
-            <div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
+            <div class="custom-group">
                 <input type="number" id="custom-ml" placeholder="Örn: 250">
                 <button onclick="addCustomWater()">Ekle</button>
             </div>
         </section>
 
         <section id="stats-page" class="page">
-            <h2>İstatistikler</h2>
-            <div id="stats-display" style="background:var(--glass); padding:20px; border-radius:20px;"></div>
+            <h2>📊 İstatistikler</h2>
+            <div id="stats-display" style="background:var(--glass); padding:20px; border-radius:20px; text-align: left;"></div>
             <button onclick="resetData()" style="background:#ff4757; color:white; width:100%; margin-top:20px;">Verileri Sıfırla</button>
         </section>
 
+        <section id="badges-page" class="page">
+            <h2>🏆 Rozet Koleksiyonu</h2>
+            <div class="badge-grid">
+                <div class="badge-card" id="badge-1">
+                    <div class="badge-icon">💧</div>
+                    <b>İlk Adım</b><br><small>İlk su kaydını yap</small>
+                </div>
+                <div class="badge-card" id="badge-2">
+                    <div class="badge-icon">✅</div>
+                    <b>Hedef Tamam</b><br><small>Günlük hedefe ulaş</small>
+                </div>
+                <div class="badge-card" id="badge-3">
+                    <div class="badge-icon">🌊</div>
+                    <b>Deniz İnsanı</b><br><small>3000ml üzerine çık</small>
+                </div>
+                <div class="badge-card" id="badge-4">
+                    <div class="badge-icon">👑</div>
+                    <b>Şampiyon</b><br><small>Hedefin 2 katını iç</small>
+                </div>
+            </div>
+        </section>
+
         <section id="settings-page" class="page">
-            <h2>Hedef Ayarla</h2>
-            <input type="number" id="target-input" value="2000" style="width:80%">
-            <button onclick="updateTarget()">Hedefi Güncelle</button>
+            <h2>⚙️ Ayarlar</h2>
+            <div style="background:var(--glass); padding:20px; border-radius:20px;">
+                <p>Günlük Hedefini Belirle</p>
+                <input type="number" id="target-input" style="width:100%; margin-bottom:10px;">
+                <button onclick="updateTarget()" style="width:100%">Hedefi Güncelle</button>
+            </div>
         </section>
 
         <nav class="bottom-nav">
-            <button onclick="showPage('home-page')">🏠</button>
-            <button onclick="showPage('stats-page')">📊</button>
-            <button onclick="showPage('settings-page')">⚙️</button>
+            <button class="nav-btn" onclick="showPage('home-page')">🏠</button>
+            <button class="nav-btn" onclick="showPage('stats-page')">📊</button>
+            <button class="nav-btn" onclick="showPage('badges-page')">🏆</button>
+            <button class="nav-btn" onclick="showPage('settings-page')">⚙️</button>
         </nav>
     </div>
 
     <script>
-        // JAVASCRIPT MANTIĞI
         let dailyTarget = parseInt(localStorage.getItem('dailyTarget')) || 2000;
 
         function showPage(pageId) {
@@ -197,13 +289,16 @@
                 .filter(log => log.date === today)
                 .reduce((sum, log) => sum + log.amount, 0);
 
+            // Metin Güncellemeleri
             document.getElementById('current-ml').innerText = totalToday;
             document.getElementById('target-display').innerText = dailyTarget;
+            document.getElementById('target-input').value = dailyTarget;
 
+            // Su Seviyesi
             const percent = Math.min((totalToday / dailyTarget) * 100, 100);
             document.getElementById('water-level').style.height = percent + "%";
 
-            // ML Çizgileri
+            // Dinamik ML Çizgileri
             const labelContainer = document.getElementById('cup-labels');
             labelContainer.innerHTML = '';
             for (let i = 5; i >= 1; i--) {
@@ -211,14 +306,25 @@
                 div.innerText = (Math.round((dailyTarget / 5) * i)) + "ml -";
                 labelContainer.appendChild(div);
             }
+
+            checkBadges(totalToday, data.length);
+        }
+
+        function checkBadges(totalToday, totalRecords) {
+            // Rozet Mantığı
+            if(totalRecords > 0) document.getElementById('badge-1').classList.add('unlocked');
+            if(totalToday >= dailyTarget) document.getElementById('badge-2').classList.add('unlocked');
+            if(totalToday >= 3000) document.getElementById('badge-3').classList.add('unlocked');
+            if(totalToday >= dailyTarget * 2) document.getElementById('badge-4').classList.add('unlocked');
         }
 
         function renderStats() {
             let data = JSON.parse(localStorage.getItem('waterLogs')) || [];
             const total = data.reduce((sum, log) => sum + log.amount, 0);
             document.getElementById('stats-display').innerHTML = `
-                <p>Toplam Kayıt: ${data.length}</p>
-                <p>Toplam Hacim: <b>${total} ml</b></p>
+                <p>💧 Toplam İçilen: <b>${total} ml</b></p>
+                <p>📝 Kayıt Sayısı: <b>${data.length}</b></p>
+                <p>🎯 Günlük Hedef: <b>${dailyTarget} ml</b></p>
             `;
         }
 
@@ -228,13 +334,15 @@
                 dailyTarget = parseInt(newTarget);
                 localStorage.setItem('dailyTarget', dailyTarget);
                 updateUI();
-                alert("Hedef güncellendi!");
+                alert("Yeni hedefin belirlendi!");
             }
         }
 
         function resetData() {
-            if(confirm("Tüm veriler silinecek?")) {
+            if(confirm("Tüm su verilerin silinecek, emin misin?")) {
                 localStorage.removeItem('waterLogs');
+                // Rozetleri de görsel olarak kilitle
+                document.querySelectorAll('.badge-card').forEach(b => b.classList.remove('unlocked'));
                 updateUI();
                 renderStats();
             }
@@ -244,7 +352,6 @@
             document.body.classList.toggle('dark-mode');
         }
 
-        // İlk Yükleme
         window.onload = updateUI;
     </script>
 </body>
