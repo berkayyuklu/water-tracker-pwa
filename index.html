@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Su Takibi</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#007bff">
+</head>
+<body class="dark-mode">
+    <div class="container">
+        <header>
+            <h1>Su Takibi</h1>
+            <button id="theme-toggle">🌓 Mod Değiştir</button>
+        </header>
+
+        <section class="visual-tracker">
+            <div class="cup-container">
+                <div id="water-level" class="water"></div>
+                <div class="cup-overlay"><span id="current-ml">0</span> ml</div>
+            </div>
+            <p>Hedef: <span id="target-display">2000</span> ml</p>
+        </section>
+
+        <section class="controls">
+            <div id="quick-add" class="button-group">
+                <button onclick="addWater(200)">200ml</button>
+                <button onclick="addWater(330)">330ml</button>
+                <button onclick="addWater(500)">500ml</button>
+            </div>
+            <div class="custom-add">
+                <input type="number" id="custom-ml" placeholder="Örn: 250">
+                <button onclick="addCustomWater()">Ekle</button>
+            </div>
+        </section>
+
+        <section class="stats">
+            <div class="tabs">
+                <button onclick="showStats('day')">Gün</button>
+                <button onclick="showStats('week')">Hafta</button>
+                <button onclick="showStats('month')">Ay</button>
+            </div>
+            <div id="stats-display">Veri yükleniyor...</div>
+            <button id="reset-btn" class="danger">Verileri Sıfırla</button>
+        </section>
+
+        <section id="badges" class="badges">
+            <h3>Rozetlerin</h3>
+            <div id="badge-list"></div>
+        </section>
+
+        <section class="settings">
+            <label>Günlük Hedef (ml):</label>
+            <input type="number" id="target-input" value="2000">
+            <button onclick="updateTarget()">Hedefi Güncelle</button>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
