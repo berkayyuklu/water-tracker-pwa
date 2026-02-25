@@ -1,75 +1,119 @@
 :root {
-    --bg-color: #f4f4f9;
-    --text-color: #333;
-    --card-bg: #fff;
-    --primary: #007bff;
-    --danger: #dc3545;
+    --bg: #e0e5ec;
+    --text: #333;
+    --glass: rgba(255, 255, 255, 0.7);
+    --primary: #4facfe;
+    --shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
 }
 
 body.dark-mode {
-    --bg-color: #1a1a1a;
-    --text-color: #f4f4f9;
-    --card-bg: #2d2d2d;
+    --bg: #121212;
+    --text: #ffffff;
+    --glass: rgba(45, 45, 45, 0.8);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-family: 'Segoe UI', sans-serif;
-    transition: 0.3s;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
     display: flex;
     justify-content: center;
-    padding: 20px;
 }
 
-.container {
+.app-container {
     width: 100%;
-    max-width: 400px;
-    background: var(--card-bg);
+    max-width: 450px;
+    height: 100vh;
+    position: relative;
     padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    box-sizing: border-box;
+}
+
+/* Sayfa Yönetimi */
+.page { display: none; padding-bottom: 80px; }
+.page.active { display: block; animation: fadeIn 0.4s; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Bardak ve ML Etiketleri */
+.tracker-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin: 40px 0;
 }
 
 .cup-container {
-    width: 150px;
-    height: 200px;
-    border: 4px solid var(--primary);
-    border-radius: 0 0 20px 20px;
-    margin: 20px auto;
+    width: 100px;
+    height: 250px;
+    border: 3px solid var(--primary);
+    border-radius: 10px 10px 30px 30px;
     position: relative;
     overflow: hidden;
-    background: #eee;
+    background: var(--glass);
+}
+
+.cup-labels {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: space-between;
+    height: 250px;
+    font-size: 0.8rem;
+    color: var(--primary);
 }
 
 .water {
     position: absolute;
     bottom: 0;
     width: 100%;
-    background: var(--primary);
-    transition: height 0.5s ease-in-out;
+    background: linear-gradient(to top, #00f2fe, #4facfe);
+    transition: height 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.cup-overlay {
-    position: absolute;
-    top: 50%;
+/* Modern Oval Input ve Butonlar */
+.glass-btn, .custom-input-group input, .custom-input-group button {
+    background: var(--glass);
+    border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 25px; /* Oval yapı */
+    padding: 12px 20px;
+    color: var(--text);
+    box-shadow: var(--shadow);
+}
+
+.custom-input-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.custom-input-group input { flex: 1; outline: none; }
+
+/* Alt Menü */
+.bottom-nav {
+    position: fixed;
+    bottom: 20px;
     left: 50%;
-    transform: translate(-50%, -50%);
-    font-weight: bold;
-    font-size: 1.2rem;
-    z-index: 2;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    background: var(--glass);
+    backdrop-filter: blur(15px);
+    display: flex;
+    justify-content: space-around;
+    padding: 15px;
+    border-radius: 30px;
+    box-shadow: var(--shadow);
 }
 
-button {
-    padding: 10px;
-    margin: 5px;
+.bottom-nav button {
+    background: none;
     border: none;
-    border-radius: 5px;
+    font-size: 1.5rem;
     cursor: pointer;
-    background: var(--primary);
-    color: white;
 }
 
-.danger { background: var(--danger); }
-
-.button-group { display: flex; justify-content: space-around; flex-wrap: wrap; }
+.danger-btn { background: #ff4757; color: white; border-radius: 20px; padding: 10px; border: none; width: 100%; margin-top: 20px;}
