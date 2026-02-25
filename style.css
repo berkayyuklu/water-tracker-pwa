@@ -1,0 +1,75 @@
+:root {
+    --bg-color: #f4f4f9;
+    --text-color: #333;
+    --card-bg: #fff;
+    --primary: #007bff;
+    --danger: #dc3545;
+}
+
+body.dark-mode {
+    --bg-color: #1a1a1a;
+    --text-color: #f4f4f9;
+    --card-bg: #2d2d2d;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', sans-serif;
+    transition: 0.3s;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 400px;
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.cup-container {
+    width: 150px;
+    height: 200px;
+    border: 4px solid var(--primary);
+    border-radius: 0 0 20px 20px;
+    margin: 20px auto;
+    position: relative;
+    overflow: hidden;
+    background: #eee;
+}
+
+.water {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: var(--primary);
+    transition: height 0.5s ease-in-out;
+}
+
+.cup-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    font-size: 1.2rem;
+    z-index: 2;
+}
+
+button {
+    padding: 10px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background: var(--primary);
+    color: white;
+}
+
+.danger { background: var(--danger); }
+
+.button-group { display: flex; justify-content: space-around; flex-wrap: wrap; }
