@@ -4,38 +4,141 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AquaTrack PWA</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
+    <style>
+        /* CSS AYARLARI */
+        :root {
+            --bg: #e0e5ec;
+            --text: #333;
+            --glass: rgba(255, 255, 255, 0.8);
+            --primary: #4facfe;
+            --shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+        }
+
+        body.dark-mode {
+            --bg: #121212;
+            --text: #ffffff;
+            --glass: rgba(45, 45, 45, 0.9);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Bardak ve ML Çizgileri */
+        .tracker-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .cup-container {
+            width: 100px;
+            height: 250px;
+            border: 4px solid var(--primary);
+            border-radius: 10px 10px 30px 30px;
+            position: relative;
+            overflow: hidden;
+            background: var(--glass);
+        }
+
+        .cup-labels {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 250px;
+            font-size: 12px;
+            color: var(--primary);
+            text-align: right;
+            width: 60px;
+        }
+
+        .water {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, #00f2fe, #4facfe);
+            transition: height 0.5s ease;
+            height: 0%;
+        }
+
+        /* Butonlar */
+        .glass-btn, button {
+            background: var(--glass);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 12px;
+            color: var(--text);
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            background: var(--glass);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .current-status { text-align: center; margin-top: 10px; }
+        input { padding: 10px; border-radius: 15px; border: 1px solid #ccc; width: 100px; }
+    </style>
 </head>
 <body class="dark-mode">
+
     <div class="app-container">
         <section id="home-page" class="page active">
-            <header>
-                <div class="header-top">
-                    <h1>Su Takibi</h1>
-                    <button id="theme-toggle">🌓</button>
-                </div>
-            </header>
+            <div style="display:flex; justify-content: space-between; align-items: center;">
+                <h2>AquaTrack</h2>
+                <button onclick="toggleTheme()">🌓</button>
+            </div>
 
             <div class="tracker-wrapper">
-                <div class="cup-labels" id="cup-labels">
-                    </div>
+                <div class="cup-labels" id="cup-labels"></div>
                 <div class="cup-container">
                     <div id="water-level" class="water"></div>
                 </div>
-                <div class="current-status">
-                    <h2 id="current-ml">0</h2>
-                    <span>/ <span id="target-display">2000</span> ml</span>
-                </div>
             </div>
 
-            <div class="quick-actions">
-                <button class="glass-btn" onclick="addWater(200)">+200ml</button>
-                <button class="glass-btn" onclick="addWater(330)">+330ml</button>
-                <button class="glass-btn" onclick="addWater(500)">+500ml</button>
+            <div class="current-status">
+                <h1 style="margin:0"><span id="current-ml">0</span> ml</h1>
+                <p>Hedef: <span id="target-display">2000</span> ml</p>
             </div>
-            
-            <div class="custom-input-group">
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px; margin-top:20px;">
+                <button onclick="addWater(200)">+200ml</button>
+                <button onclick="addWater(330)">+330ml</button>
+                <button onclick="addWater(500)">+500ml</button>
+            </div>
+
+            <div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
                 <input type="number" id="custom-ml" placeholder="Örn: 250">
                 <button onclick="addCustomWater()">Ekle</button>
             </div>
@@ -43,32 +146,106 @@
 
         <section id="stats-page" class="page">
             <h2>İstatistikler</h2>
-            <div class="stats-card" id="stats-display">Veri bekleniyor...</div>
-            <button class="danger-btn" id="reset-btn">Verileri Sıfırla</button>
-        </section>
-
-        <section id="badges-page" class="page">
-            <h2>Rozetlerin</h2>
-            <div id="badge-list" class="badge-grid">Henüz rozet yok.</div>
+            <div id="stats-display" style="background:var(--glass); padding:20px; border-radius:20px;"></div>
+            <button onclick="resetData()" style="background:#ff4757; color:white; width:100%; margin-top:20px;">Verileri Sıfırla</button>
         </section>
 
         <section id="settings-page" class="page">
-            <h2>Hedef Belirle</h2>
-            <div class="settings-card">
-                <input type="number" id="target-input" value="2000">
-                <button class="glass-btn" onclick="updateTarget()">Kaydet</button>
-            </div>
+            <h2>Hedef Ayarla</h2>
+            <input type="number" id="target-input" value="2000" style="width:80%">
+            <button onclick="updateTarget()">Hedefi Güncelle</button>
         </section>
 
         <nav class="bottom-nav">
             <button onclick="showPage('home-page')">🏠</button>
             <button onclick="showPage('stats-page')">📊</button>
-            <button onclick="showPage('badges-page')">🏆</button>
             <button onclick="showPage('settings-page')">⚙️</button>
         </nav>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        // JAVASCRIPT MANTIĞI
+        let dailyTarget = parseInt(localStorage.getItem('dailyTarget')) || 2000;
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            updateUI();
+            if(pageId === 'stats-page') renderStats();
+        }
+
+        function addWater(amount) {
+            let data = JSON.parse(localStorage.getItem('waterLogs')) || [];
+            const today = new Date().toISOString().split('T')[0];
+            data.push({ date: today, amount: parseInt(amount) });
+            localStorage.setItem('waterLogs', JSON.stringify(data));
+            updateUI();
+        }
+
+        function addCustomWater() {
+            const val = document.getElementById('custom-ml').value;
+            if(val > 0) {
+                addWater(val);
+                document.getElementById('custom-ml').value = '';
+            }
+        }
+
+        function updateUI() {
+            let data = JSON.parse(localStorage.getItem('waterLogs')) || [];
+            const today = new Date().toISOString().split('T')[0];
+            const totalToday = data
+                .filter(log => log.date === today)
+                .reduce((sum, log) => sum + log.amount, 0);
+
+            document.getElementById('current-ml').innerText = totalToday;
+            document.getElementById('target-display').innerText = dailyTarget;
+
+            const percent = Math.min((totalToday / dailyTarget) * 100, 100);
+            document.getElementById('water-level').style.height = percent + "%";
+
+            // ML Çizgileri
+            const labelContainer = document.getElementById('cup-labels');
+            labelContainer.innerHTML = '';
+            for (let i = 5; i >= 1; i--) {
+                const div = document.createElement('div');
+                div.innerText = (Math.round((dailyTarget / 5) * i)) + "ml -";
+                labelContainer.appendChild(div);
+            }
+        }
+
+        function renderStats() {
+            let data = JSON.parse(localStorage.getItem('waterLogs')) || [];
+            const total = data.reduce((sum, log) => sum + log.amount, 0);
+            document.getElementById('stats-display').innerHTML = `
+                <p>Toplam Kayıt: ${data.length}</p>
+                <p>Toplam Hacim: <b>${total} ml</b></p>
+            `;
+        }
+
+        function updateTarget() {
+            const newTarget = document.getElementById('target-input').value;
+            if(newTarget > 0) {
+                dailyTarget = parseInt(newTarget);
+                localStorage.setItem('dailyTarget', dailyTarget);
+                updateUI();
+                alert("Hedef güncellendi!");
+            }
+        }
+
+        function resetData() {
+            if(confirm("Tüm veriler silinecek?")) {
+                localStorage.removeItem('waterLogs');
+                updateUI();
+                renderStats();
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        // İlk Yükleme
+        window.onload = updateUI;
+    </script>
 </body>
 </html>
-
-
