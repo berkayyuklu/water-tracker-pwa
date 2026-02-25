@@ -1,15 +1,16 @@
 {
-  "name": "Su Takip Uygulaması",
-  "short_name": "SuTakip",
-  "start_url": "index.html",
+  "name": "AquaTrack Su Takibi",
+  "short_name": "AquaTrack",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#1a1a1a",
-  "theme_color": "#007bff",
+  "background_color": "#121212",
+  "theme_color": "#4facfe",
   "icons": [
     {
       "src": "icon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
