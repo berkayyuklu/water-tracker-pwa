@@ -1,39 +1,29 @@
-// Verileri Başlat
-let waterData = JSON.parse(localStorage.getItem('waterLogs')) || [];
+// Uygulama Ayarları ve Veri Yükleme
 let dailyTarget = parseInt(localStorage.getItem('dailyTarget')) || 2000;
+
+function getWaterData() {
+    return JSON.parse(localStorage.getItem('waterLogs')) || [];
+}
 
 // Sayfa Geçiş Yönetimi
 function showPage(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
     
-    // Sayfa bazlı özel güncellemeler
+    // Her sayfa geçişinde verileri ve arayüzü tazele
+    updateUI();
     if (pageId === 'stats-page') renderStats();
-    if (pageId === 'home-page') updateUI();
-}
-
-// Dinamik ML Çizgilerini Oluşturma
-function updateCupLabels() {
-    const labelContainer = document.getElementById('cup-labels');
-    if (!labelContainer) return;
-    
-    labelContainer.innerHTML = '';
-    const step = dailyTarget / 5;
-    for (let i = 5; i >= 1; i--) { // Üstten aşağıya doğru sıralama
-        const div = document.createElement('div');
-        div.style.flex = "1";
-        div.style.display = "flex";
-        div.style.alignItems = "center";
-        div.innerText = (step * i) + "ml -";
-        labelContainer.appendChild(div);
-    }
 }
 
 // Su Ekleme Fonksiyonu
 function addWater(amount) {
+    const waterData = getWaterData();
     const today = new Date().toISOString().split('T')[0];
+    
     waterData.push({ date: today, amount: amount });
-    saveData();
+    localStorage.setItem('waterLogs', JSON.stringify(waterData));
+    
+    // Veri eklenir eklenmez arayüzü zorla güncelle
     updateUI();
 }
 
@@ -43,23 +33,19 @@ function addCustomWater() {
     if (val > 0) {
         addWater(val);
         input.value = '';
-    } else {
-        alert("Lütfen geçerli bir miktar girin.");
     }
 }
 
-// Kayıt ve Arayüz Güncelleme
-function saveData() {
-    localStorage.setItem('waterLogs', JSON.stringify(waterData));
-}
-
+// Ana Ekranı Güncelleme (Bardak ve Rakamlar)
 function updateUI() {
+    const waterData = getWaterData();
     const today = new Date().toISOString().split('T')[0];
+    
     const totalToday = waterData
         .filter(log => log.date === today)
         .reduce((sum, log) => sum + log.amount, 0);
 
-    // Elementlerin varlığını kontrol et (Hata almamak için)
+    // DOM Elementlerini her seferinde yeniden seç (Garanti yöntem)
     const currentMlEl = document.getElementById('current-ml');
     const targetDisplayEl = document.getElementById('target-display');
     const waterLevelEl = document.getElementById('water-level');
@@ -70,79 +56,72 @@ function updateUI() {
     if (waterLevelEl) {
         const percent = Math.min((totalToday / dailyTarget) * 100, 100);
         waterLevelEl.style.height = percent + "%";
+        // Bardak rengini su seviyesine göre belirle
+        waterLevelEl.style.background = "linear-gradient(to top, #00f2fe, #4facfe)";
     }
     
     updateCupLabels();
-    checkBadges(totalToday);
+}
+
+// Yan taraftaki ML Çizgileri
+function updateCupLabels() {
+    const labelContainer = document.getElementById('cup-labels');
+    if (!labelContainer) return;
+    
+    labelContainer.innerHTML = '';
+    const step = dailyTarget / 5;
+    for (let i = 5; i >= 1; i--) {
+        const div = document.createElement('div');
+        div.style.height = "20%"; // Eşit dağılım
+        div.style.display = "flex";
+        div.style.alignItems = "center";
+        div.innerText = (step * i) + "ml -";
+        labelContainer.appendChild(div);
+    }
+}
+
+// İstatistik Sayfası
+function renderStats() {
+    const display = document.getElementById('stats-display');
+    if (!display) return;
+
+    const waterData = getWaterData();
+    const total = waterData.reduce((sum, log) => sum + log.amount, 0);
+    
+    display.innerHTML = `
+        <div class="stats-card-inner" style="background: var(--glass); padding: 20px; border-radius: 20px;">
+            <p>Toplam İçilen: <strong>${total} ml</strong></p>
+            <p>Kayıt Sayısı: <strong>${waterData.length}</strong></p>
+        </div>
+    `;
 }
 
 // Hedef Güncelleme
 function updateTarget() {
     const input = document.getElementById('target-input');
-    const newTarget = parseInt(input.value);
-    if (newTarget > 0) {
-        dailyTarget = newTarget;
+    if (input && input.value > 0) {
+        dailyTarget = parseInt(input.value);
         localStorage.setItem('dailyTarget', dailyTarget);
         updateUI();
-        alert("Hedefiniz " + dailyTarget + " ml olarak güncellendi.");
+        alert("Hedef güncellendi!");
     }
 }
 
-// Rozet Kontrolü
-function checkBadges(totalToday) {
-    const badgeList = document.getElementById('badge-list');
-    if (!badgeList) return;
-    
-    if (totalToday >= dailyTarget) {
-        badgeList.innerHTML = `
-            <div class="badge-item" style="background:rgba(255,215,0,0.2); padding:15px; border-radius:15px; border:1px solid gold; text-align:center;">
-                🥇 <strong>Günlük Hedef Ustası</strong><br>
-                Bugünkü hedefine ulaştın!
-            </div>`;
-    } else {
-        badgeList.innerHTML = "Henüz rozet kazanılmadı. İçmeye devam et! 💧";
-    }
-}
-
-// İstatistikleri Render Etme
-function renderStats() {
-    const display = document.getElementById('stats-display');
-    if (!display) return;
-
-    const total = waterData.reduce((sum, log) => sum + log.amount, 0);
-    const today = new Date().toISOString().split('T')[0];
-    const todayTotal = waterData
-        .filter(log => log.date === today)
-        .reduce((sum, log) => sum + log.amount, 0);
-
-    display.innerHTML = `
-        <div style="background: var(--glass); padding: 15px; border-radius: 15px; margin-bottom: 10px;">
-            <p>Bugün Toplam: <strong>${todayTotal} ml</strong></p>
-            <p>Genel Toplam: <strong>${total} ml</strong></p>
-            <p>Toplam Kayıt: <strong>${waterData.length}</strong></p>
-        </div>
-    `;
-}
-
-// Tema ve Sıfırlama Dinleyicileri
-document.getElementById('theme-toggle').onclick = () => document.body.classList.toggle('dark-mode');
-
+// Verileri Sıfırla
 document.getElementById('reset-btn').onclick = () => {
-    if (confirm("Tüm geçmiş verileriniz silinecek. Emin misiniz?")) {
-        waterData = [];
-        saveData();
+    if (confirm("Tüm veriler silinsin mi?")) {
+        localStorage.removeItem('waterLogs');
         updateUI();
-        if(document.getElementById('stats-page').classList.contains('active')) renderStats();
-        alert("Veriler sıfırlandı.");
+        renderStats();
     }
 };
 
-// PWA Servis İşçisi Kaydı
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(err => console.log("SW hatası:", err));
-}
+// Tema Değiştirici
+document.getElementById('theme-toggle').onclick = () => {
+    document.body.classList.toggle('dark-mode');
+};
 
-// Uygulamayı Başlat
+// Başlangıç
 window.onload = () => {
     updateUI();
 };
