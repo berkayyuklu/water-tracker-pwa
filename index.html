@@ -347,7 +347,11 @@
                 renderStats();
             }
         }
-
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+    .then(() => console.log("Servis İşçisi Kaydedildi"))
+    .catch(err => console.log("Hata:", err));
+}
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
         }
